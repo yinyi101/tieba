@@ -1,14 +1,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from math import ceil
+
 from django.shortcuts import render, redirect
 
 from post.models import Post
 
 
 def post_list(request):
-    return render(request, 'post_list.html')
+    page = int(request.GET.get('page', 1))  # 页码
+    per_page = 10                           # 每页文章数
+    total = Post.objects.count()            # 帖子总数
+    pages = (total // per_page) + 1         # 总页数
 
+    start = (page - 1) * per_page
+    end = start + per_page
+    posts = Post.objects.all().order_by('-id')[start:end]  # 惰性加载 (懒加载)
+    return render(request, 'post_list.html', {'posts': posts, 'pages': range(pages)})
 
 def create_post(request):
     if request.method == 'POST':
